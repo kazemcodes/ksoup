@@ -35,13 +35,9 @@ jobs:
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          SIGNING_KEY: ${{ secrets.GPG_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.GPG_KEY_PASSWORD }}
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signing.keyId: ${{ secrets.GPG_KEY_ID }}
-          ORG_GRADLE_PROJECT_signing.password: ${{ secrets.GPG_KEY_PASSWORD }}
-          ORG_GRADLE_PROJECT_signing.secretKeyRingFile: ${{ secrets.GPG_KEY }}
+          GPG_KEY: ${{ secrets.GPG_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_KEY_PASSWORD: ${{ secrets.GPG_KEY_PASSWORD }}
 
       - name: Success message
         run: echo "Publishing of ${{ matrix.buildType }} completed successfully."

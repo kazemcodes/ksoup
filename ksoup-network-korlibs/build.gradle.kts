@@ -10,7 +10,6 @@ val packageVersion = libs.versions.libraryVersion.get()
 group = "io.github.ireaderorg"
 version = packageVersion
 
-// Create empty javadoc jar for Maven Central requirements
 val javadocJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
 }
@@ -49,41 +48,30 @@ afterEvaluate {
         }
 
         repositories {
-            val ossrhUsername = System.getenv("MAVEN_USERNAME")
-                ?: findProperty("mavenCentralUsername") as String?
-            val ossrhPassword = System.getenv("MAVEN_PASSWORD")
-                ?: findProperty("mavenCentralPassword") as String?
+            val ossrhUsername = System.getenv("MAVEN_USERNAME") ?: findProperty("mavenCentralUsername") as String?
+            val ossrhPassword = System.getenv("MAVEN_PASSWORD") ?: findProperty("mavenCentralPassword") as String?
             if (ossrhUsername != null && ossrhPassword != null) {
                 maven {
                     name = "OSSRH"
                     val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                     val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                     setUrl(if (packageVersion.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-                    credentials {
-                        username = ossrhUsername
-                        password = ossrhPassword
-                    }
+                    credentials { username = ossrhUsername; password = ossrhPassword }
                 }
             }
         }
     }
-
     signing {
-        val signingKey = findProperty("signing.keyId") as String?
-        val signingPassword = findProperty("signing.password") as String?
+        val signingKey = System.getenv("GPG_KEY") ?: findProperty("signingInMemoryKey") as String?
+        val signingKeyId = System.getenv("GPG_KEY_ID") ?: findProperty("signingInMemoryKeyId") as String?
+        val signingPassword = System.getenv("GPG_KEY_PASSWORD") ?: findProperty("signingInMemoryKeyPassword") as String?
         if (signingKey != null && signingPassword != null) {
+            if (signingKeyId != null) useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+            else useInMemoryPgpKeys(signingKey, signingPassword)
             sign(publishing.publications)
-        } else {
-            val signingKeyEnv = System.getenv("SIGNING_KEY")
-            val signingPasswordEnv = System.getenv("SIGNING_PASSWORD")
-            if (signingKeyEnv != null && signingPasswordEnv != null) {
-                useInMemoryPgpKeys(signingKeyEnv, signingPasswordEnv)
-                sign(publishing.publications)
-            }
         }
     }
 }
-
 nmcp {
     publishAllPublications {
         username = System.getenv("MAVEN_USERNAME") ?: findProperty("mavenCentralUsername") as String? ?: ""
@@ -91,7 +79,4 @@ nmcp {
         publicationType = "AUTOMATIC"
     }
 }
-
-tasks.withType<PublishToMavenRepository>().configureEach {
-    dependsOn(tasks.withType<Sign>())
-}
+tasks.withType<PublishToMavenRepository>().configureEach { dependsOn(tasks.withType<Sign>()) }
