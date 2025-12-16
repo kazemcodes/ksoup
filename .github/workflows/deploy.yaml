@@ -28,17 +28,29 @@ jobs:
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Setup GPG Key
+        run: |
+          echo "$GPG_SIGNING_KEY" > /tmp/signing_key.asc
+          echo "Signing key written to file"
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+
       - name: Publish ${{ matrix.buildType }}
         run: |
+          # Read the key from file and pass to Gradle
+          export ORG_GRADLE_PROJECT_signingInMemoryKey="$(cat /tmp/signing_key.asc)"
           chmod +x ./publishToMaven.sh
           ./publishToMaven.sh --remote ${{ matrix.buildType }}
         working-directory: ${{ github.workspace }}
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_KEY_PASSWORD }}
+
+      - name: Cleanup
+        if: always()
+        run: rm -f /tmp/signing_key.asc
 
       - name: Success message
         run: echo "Publishing of ${{ matrix.buildType }} completed successfully."
