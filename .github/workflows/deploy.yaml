@@ -28,17 +28,27 @@ jobs:
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Decode GPG key
+        id: decode_gpg
+        run: |
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | base64 --decode > /tmp/signing_key.asc
+          echo "GPG_KEY_FILE=/tmp/signing_key.asc" >> $GITHUB_OUTPUT
+
       - name: Publish ${{ matrix.buildType }}
         run: |
+          export ORG_GRADLE_PROJECT_signingKey=$(cat /tmp/signing_key.asc)
           chmod +x ./publishToMaven.sh
           ./publishToMaven.sh --remote ${{ matrix.buildType }}
         working-directory: ${{ github.workspace }}
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.GPG_KEY_ID }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_KEY_PASSWORD }}
+
+      - name: Cleanup
+        if: always()
+        run: rm -f /tmp/signing_key.asc
 
       - name: Success message
         run: echo "Publishing of ${{ matrix.buildType }} completed successfully."
