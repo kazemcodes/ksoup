@@ -8,6 +8,8 @@ version = libs.versions.libraryVersion.get()
 
 val artifactId = "ksoup"
 mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
     coordinates("io.github.ireaderorg", artifactId, libs.versions.libraryVersion.get())
     pom {
         name.set(artifactId)
