@@ -10,7 +10,6 @@ val packageVersion = libs.versions.libraryVersion.get()
 group = "io.github.ireaderorg"
 version = packageVersion
 
-// Create empty javadoc jar for Maven Central requirements
 val javadocJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
 }
@@ -49,40 +48,28 @@ afterEvaluate {
         }
 
         repositories {
-            val ossrhUsername = System.getenv("MAVEN_USERNAME")
-                ?: findProperty("mavenCentralUsername") as String?
-            val ossrhPassword = System.getenv("MAVEN_PASSWORD")
-                ?: findProperty("mavenCentralPassword") as String?
+            val ossrhUsername = System.getenv("MAVEN_USERNAME") ?: findProperty("mavenCentralUsername") as String?
+            val ossrhPassword = System.getenv("MAVEN_PASSWORD") ?: findProperty("mavenCentralPassword") as String?
             if (ossrhUsername != null && ossrhPassword != null) {
                 maven {
                     name = "OSSRH"
                     val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                     val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                     setUrl(if (packageVersion.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-                    credentials {
-                        username = ossrhUsername
-                        password = ossrhPassword
-                    }
+                    credentials { username = ossrhUsername; password = ossrhPassword }
                 }
             }
         }
     }
 
-    // Configure signing using in-memory PGP keys (for CI/CD)
+    // Signing configuration - uses gradle properties set via environment variables
     signing {
-        val signingKey = System.getenv("GPG_KEY")
-            ?: findProperty("signingInMemoryKey") as String?
-        val signingKeyId = System.getenv("GPG_KEY_ID")
-            ?: findProperty("signingInMemoryKeyId") as String?
-        val signingPassword = System.getenv("GPG_KEY_PASSWORD")
-            ?: findProperty("signingInMemoryKeyPassword") as String?
-
-        if (signingKey != null && signingPassword != null) {
-            if (signingKeyId != null) {
-                useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
-            } else {
-                useInMemoryPgpKeys(signingKey, signingPassword)
-            }
+        // Check if signing is configured (via ORG_GRADLE_PROJECT_signing.* env vars or gradle.properties)
+        val keyId = findProperty("signing.keyId") as String?
+        val secretKeyRingFile = findProperty("signing.secretKeyRingFile") as String?
+        val password = findProperty("signing.password") as String?
+        
+        if (keyId != null && secretKeyRingFile != null && password != null) {
             sign(publishing.publications)
         }
     }
@@ -96,6 +83,4 @@ nmcp {
     }
 }
 
-tasks.withType<PublishToMavenRepository>().configureEach {
-    dependsOn(tasks.withType<Sign>())
-}
+tasks.withType<PublishToMavenRepository>().configureEach { dependsOn(tasks.withType<Sign>()) }
