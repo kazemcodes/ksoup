@@ -9,7 +9,7 @@ REMOTE_PUBLISH=false
 
 # Check for the --remote flag
 if [ "$1" == "--remote" ]; then
-  PUBLISH_TASK="publishAllPublicationsToOSSRHRepository"
+  PUBLISH_TASK="publishAllPublicationsToCentralPortal"
   REMOTE_PUBLISH=true
   shift
 fi
