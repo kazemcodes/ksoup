@@ -40,16 +40,19 @@ afterEvaluate {
             }
         }
     }
-    signing {
-        val signingKey = findProperty("signingInMemoryKey") as String?
-        val signingKeyId = findProperty("signingInMemoryKeyId") as String?
-        val signingPassword = findProperty("signingInMemoryKeyPassword") as String?
-        if (signingKey != null && signingPassword != null) {
-            useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    
+    val signingKey = findProperty("signingInMemoryKey") as String?
+    val signingKeyId = findProperty("signingInMemoryKeyId") as String?
+    val signingPassword = findProperty("signingInMemoryKeyPassword") as String?
+    
+    if (signingKey != null && signingPassword != null) {
+        signing {
+            useInMemoryPgpKeys(signingKeyId, signingKey.replace("\\n", "\n"), signingPassword)
             sign(publishing.publications)
         }
     }
 }
+
 nmcp {
     publishAllPublications {
         username = System.getenv("MAVEN_USERNAME") ?: findProperty("mavenCentralUsername") as String? ?: ""
@@ -57,4 +60,5 @@ nmcp {
         publicationType = "AUTOMATIC"
     }
 }
+
 tasks.withType<PublishToMavenRepository>().configureEach { dependsOn(tasks.withType<Sign>()) }
