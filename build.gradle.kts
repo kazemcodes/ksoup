@@ -13,8 +13,8 @@ plugins {
 
 val libFinder = versionCatalogs.find("libs").get()
 var REAL_VERSION = libs.versions.libraryVersion.get()
-val JVM_TARGET = JvmTarget.JVM_17
-val JDK_VERSION = JavaVersion.VERSION_17
+val JVM_TARGET = JvmTarget.JVM_21
+val JDK_VERSION = JavaVersion.VERSION_21
 
 val GROUP = "io.github.ireaderorg"
 
