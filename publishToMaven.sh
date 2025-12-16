@@ -5,10 +5,12 @@ set -e
 
 # Default publishing task
 PUBLISH_TASK="publishToMavenLocal"
+REMOTE_PUBLISH=false
 
 # Check for the --remote flag
 if [ "$1" == "--remote" ]; then
-  PUBLISH_TASK="publishAllPublicationsToMavenCentralRepository"
+  PUBLISH_TASK="publishAllPublicationsToOSSRHRepository"
+  REMOTE_PUBLISH=true
   shift
 fi
 
@@ -55,14 +57,10 @@ add_projects_based_on_key() {
 for buildType in "${build_types[@]}"; do
   add_projects_based_on_key "$buildType"
 
-  # clean build
-#  echo "clean build"
-#  ./gradlew clean --quiet --warning-mode=none
-
   for projectName in "${projects[@]}"; do
     echo "*****buildType: $buildType, project: $projectName"
     echo "Publishing $projectName with libBuildType=$buildType"
-    ./gradlew ":$projectName:$PUBLISH_TASK" -PlibBuildType="$buildType" --quiet --warning-mode=none --no-configuration-cache
+    ./gradlew ":$projectName:$PUBLISH_TASK" -PlibBuildType="$buildType" --warning-mode=none --no-configuration-cache
   done
 
 done

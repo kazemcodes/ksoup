@@ -9,9 +9,11 @@ jobs:
       matrix:
         buildType:
           - "core"
+          - "io"
           - "kotlinx"
           - "korlibs"
           - "okio"
+          - "ktor2"
     runs-on: macos-latest
     name: Publish ${{ matrix.buildType }}
     steps:
@@ -31,11 +33,15 @@ jobs:
           ./publishToMaven.sh --remote ${{ matrix.buildType }}
         working-directory: ${{ github.workspace }}
         env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.GPG_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.GPG_KEY_PASSWORD }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_signing.keyId: ${{ secrets.GPG_KEY_ID }}
+          ORG_GRADLE_PROJECT_signing.password: ${{ secrets.GPG_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_signing.secretKeyRingFile: ${{ secrets.GPG_KEY }}
 
       - name: Success message
         run: echo "Publishing of ${{ matrix.buildType }} completed successfully."
