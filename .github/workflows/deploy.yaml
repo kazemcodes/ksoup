@@ -29,28 +29,20 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Setup GPG for signing
-        env:
-          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_KEY_PASSWORD: ${{ secrets.GPG_KEY_PASSWORD }}
         run: |
           mkdir -p ~/.gradle
-          
-          # Write signing properties to gradle.properties
-          cat >> ~/.gradle/gradle.properties <<EOF
-          signing.keyId=${GPG_KEY_ID}
-          signing.password=${GPG_KEY_PASSWORD}
-          signing.key=${GPG_SIGNING_KEY}
-          EOF
-          
+          echo "signing.keyId=${{ secrets.GPG_KEY_ID }}" >> ~/.gradle/gradle.properties
+          echo "signing.password=${{ secrets.GPG_KEY_PASSWORD }}" >> ~/.gradle/gradle.properties
+          # Write multi-line key using heredoc
+          cat >> ~/.gradle/gradle.properties << 'ENDOFKEY'
+          signing.key=${{ secrets.GPG_SIGNING_KEY }}
+          ENDOFKEY
           echo "Gradle properties configured"
 
       - name: Debug signing config
         run: |
-          echo "Checking if signing properties are set..."
-          grep -q "signing.keyId" ~/.gradle/gradle.properties && echo "keyId: SET" || echo "keyId: MISSING"
-          grep -q "signing.password" ~/.gradle/gradle.properties && echo "password: SET" || echo "password: MISSING"
-          grep -q "signing.key" ~/.gradle/gradle.properties && echo "key: SET" || echo "key: MISSING"
+          echo "Checking gradle.properties..."
+          grep -c "signing" ~/.gradle/gradle.properties || echo "No signing props found"
 
       - name: Publish ${{ matrix.buildType }}
         run: |

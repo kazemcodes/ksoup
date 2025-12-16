@@ -50,7 +50,14 @@ afterEvaluate {
             }
         }
     }
-    signing { sign(publishing.publications) }
+    signing {
+        val signingKey = findProperty("signing.key") as String?
+        val signingPassword = findProperty("signing.password") as String?
+        if (signingKey != null && signingPassword != null) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+        }
+        sign(publishing.publications)
+    }
 }
 
 nmcp {
