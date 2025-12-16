@@ -41,7 +41,11 @@ afterEvaluate {
         }
     }
     signing {
-        if (findProperty("signing.keyId") != null && findProperty("signing.secretKeyRingFile") != null && findProperty("signing.password") != null) {
+        val signingKey = findProperty("signingInMemoryKey") as String?
+        val signingKeyId = findProperty("signingInMemoryKeyId") as String?
+        val signingPassword = findProperty("signingInMemoryKeyPassword") as String?
+        if (signingKey != null && signingPassword != null) {
+            useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
             sign(publishing.publications)
         }
     }
