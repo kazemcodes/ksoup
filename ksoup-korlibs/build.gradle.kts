@@ -2,35 +2,36 @@ plugins {
     alias(libs.plugins.mavenPublish)
 }
 
-group = "com.fleeksoft.ksoup"
+group = "io.github.ireaderorg"
 version = libs.versions.libraryVersion.get()
 
 val artifactId = "ksoup-korlibs"
 mavenPublishing {
-    coordinates("com.fleeksoft.ksoup", artifactId, libs.versions.libraryVersion.get())
+    coordinates("io.github.ireaderorg", artifactId, libs.versions.libraryVersion.get())
     pom {
         name.set(artifactId)
-        description.set("Ksoup is a Kotlin Multiplatform library for working with HTML and XML, and offers an easy-to-use API for URL fetching, data parsing, extraction, and manipulation using DOM and CSS selectors.")
+        description.set("Ksoup is a Kotlin Multiplatform library for working with HTML and XML, and offers an easy-to-use API for URL fetching, data parsing, extraction, and manipulation using DOM and CSS selectors. (IReader fork with JS fixes)")
         licenses {
             license {
-                name.set("MIT License")
-                url.set("https://opensource.org/licenses/MIT")
+                name.set("Mozilla Public License 2.0")
+                url.set("https://www.mozilla.org/en-US/MPL/2.0/")
             }
         }
-        url.set("https://github.com/fleeksoft/ksoup")
+        url.set("https://github.com/IReaderorg/IReader")
         issueManagement {
             system.set("Github")
-            url.set("https://github.com/fleeksoft/ksoup/issues")
+            url.set("https://github.com/IReaderorg/IReader/issues")
         }
         scm {
-            connection.set("https://github.com/fleeksoft/ksoup.git")
-            url.set("https://github.com/fleeksoft/ksoup")
+            connection.set("scm:git:git://github.com/IReaderorg/IReader.git")
+            developerConnection.set("scm:git:ssh://github.com/IReaderorg/IReader.git")
+            url.set("https://github.com/IReaderorg/IReader")
         }
         developers {
             developer {
-                name.set("Sabeeh Ul Hussnain Anjum")
-                email.set("fleeksoft@gmail.com")
-                organization.set("Fleek Soft")
+                id.set("kazemcodes")
+                name.set("kazem.codes")
+                url.set("https://github.com/IReaderorg/IReader")
             }
         }
     }

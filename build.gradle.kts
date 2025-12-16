@@ -16,7 +16,7 @@ var REAL_VERSION = libs.versions.libraryVersion.get()
 val JVM_TARGET = JvmTarget.JVM_17
 val JDK_VERSION = JavaVersion.VERSION_17
 
-val GROUP = "com.fleeksoft"
+val GROUP = "io.github.ireaderorg"
 
 kotlin {
     jvm()
