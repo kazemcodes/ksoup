@@ -54,10 +54,18 @@ afterEvaluate {
         }
     }
     signing {
+        // Use GPG agent if available (CI), otherwise use default (local with secring)
         val signingKey = findProperty("signingKey") as String?
         val signingPassword = findProperty("signingPassword") as String?
-        if (signingKey != null && signingPassword != null) {
-            useInMemoryPgpKeys(signingKey, signingPassword)
+        val gnupgKeyName = findProperty("signing.gnupg.keyName") as String?
+        
+        when {
+            signingKey != null && signingPassword != null -> {
+                useInMemoryPgpKeys(signingKey, signingPassword)
+            }
+            gnupgKeyName != null -> {
+                useGpgCmd()
+            }
         }
         sign(publishing.publications)
     }
