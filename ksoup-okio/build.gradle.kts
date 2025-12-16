@@ -12,6 +12,8 @@ version = packageVersion
 val javadocJar: TaskProvider<Jar> by tasks.registering(Jar::class) { archiveClassifier.set("javadoc") }
 
 afterEvaluate {
+    publishing.publications.removeIf { it.name.contains("Debug", ignoreCase = true) }
+    
     publishing {
         publications {
             withType<MavenPublication> {
@@ -29,34 +31,38 @@ afterEvaluate {
             }
         }
         repositories {
-            val u = System.getenv("MAVEN_USERNAME") ?: findProperty("mavenCentralUsername") as String?
-            val p = System.getenv("MAVEN_PASSWORD") ?: findProperty("mavenCentralPassword") as String?
-            if (u != null && p != null) {
+            val ossrhUsername = System.getenv("MAVEN_USERNAME")
+                ?: findProperty("ossrhUsername") as String?
+                ?: findProperty("mavenUsername") as String?
+                ?: findProperty("mavenCentralUsername") as String?
+            val ossrhPassword = System.getenv("MAVEN_PASSWORD")
+                ?: findProperty("ossrhPassword") as String?
+                ?: findProperty("mavenPassword") as String?
+                ?: findProperty("mavenCentralPassword") as String?
+            if (ossrhUsername != null && ossrhPassword != null) {
                 maven {
                     name = "OSSRH"
-                    setUrl(if (packageVersion.endsWith("SNAPSHOT")) "https://s01.oss.sonatype.org/content/repositories/snapshots/" else "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-                    credentials { username = u; password = p }
+                    val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                    val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                    setUrl(if (packageVersion.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+                    credentials { username = ossrhUsername; password = ossrhPassword }
                 }
             }
         }
     }
-    
-    val signingKey = findProperty("signingInMemoryKey") as String?
-    val signingKeyId = findProperty("signingInMemoryKeyId") as String?
-    val signingPassword = findProperty("signingInMemoryKeyPassword") as String?
-    
-    if (signingKey != null && signingPassword != null) {
-        signing {
-            useInMemoryPgpKeys(signingKeyId, signingKey.replace("\\n", "\n"), signingPassword)
-            sign(publishing.publications)
-        }
-    }
+    signing { sign(publishing.publications) }
 }
 
 nmcp {
     publishAllPublications {
-        username = System.getenv("MAVEN_USERNAME") ?: findProperty("mavenCentralUsername") as String? ?: ""
-        password = System.getenv("MAVEN_PASSWORD") ?: findProperty("mavenCentralPassword") as String? ?: ""
+        username = System.getenv("MAVEN_USERNAME")
+            ?: findProperty("mavenCentralUsername") as String?
+            ?: findProperty("mavenUsername") as String?
+            ?: ""
+        password = System.getenv("MAVEN_PASSWORD")
+            ?: findProperty("mavenCentralPassword") as String?
+            ?: findProperty("mavenPassword") as String?
+            ?: ""
         publicationType = "AUTOMATIC"
     }
 }

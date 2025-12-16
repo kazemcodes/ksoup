@@ -69,7 +69,8 @@ subprojects {
     kotlin {
         androidTarget {
             this.compilerOptions.jvmTarget.set(JVM_TARGET)
-            publishAllLibraryVariants()
+            // Only publish release variant, not debug
+            publishLibraryVariants("release")
         }
     }
 
