@@ -37,13 +37,20 @@ jobs:
           mkdir -p ~/.gradle
           
           # Write signing properties to gradle.properties
-          echo "signing.keyId=${GPG_KEY_ID}" >> ~/.gradle/gradle.properties
-          echo "signing.password=${GPG_KEY_PASSWORD}" >> ~/.gradle/gradle.properties
-          
-          # Write the key - preserve newlines by using printf
-          printf 'signing.key=%s\n' "${GPG_SIGNING_KEY//$'\n'/\\n}" >> ~/.gradle/gradle.properties
+          cat >> ~/.gradle/gradle.properties <<EOF
+          signing.keyId=${GPG_KEY_ID}
+          signing.password=${GPG_KEY_PASSWORD}
+          signing.key=${GPG_SIGNING_KEY}
+          EOF
           
           echo "Gradle properties configured"
+
+      - name: Debug signing config
+        run: |
+          echo "Checking if signing properties are set..."
+          grep -q "signing.keyId" ~/.gradle/gradle.properties && echo "keyId: SET" || echo "keyId: MISSING"
+          grep -q "signing.password" ~/.gradle/gradle.properties && echo "password: SET" || echo "password: MISSING"
+          grep -q "signing.key" ~/.gradle/gradle.properties && echo "key: SET" || echo "key: MISSING"
 
       - name: Publish ${{ matrix.buildType }}
         run: |
